@@ -1,0 +1,59 @@
+#client
+
+#include<stdio.h>
+#include<sys/types.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<netinet/in.h>
+#include<sys/socket.h>
+#include<string.h>
+#include<fcntl.h>
+int main(){
+char buff[200],fn[20];
+int sfd,n,f;
+struct sockaddr_in serv;
+sfd=socket(AF_INET,SOCK_STREAM,0);
+serv.sin_family=AF_INET;
+serv.sin_port=htons(1400);
+inet_pton(AF_INET,"192.168.4.3",&serv.sin_addr);
+connect(sfd,(struct sockaddr*)&serv,sizeof(serv));
+printf("Enter filename\n");
+scanf("%s",fn);
+write(sfd,fn,strlen(fn));
+while((n=read(sfd,buff,sizeof(buff)))>0){
+write(1,buff,n);
+}
+close(sfd);
+return 0;
+}
+
+
+
+#server
+#include<stdio.h>
+#include<netinet/in.h>
+#include<sys/socket.h>
+#include<string.h>
+#include<unistd.h>
+#include<fcntl.h>
+int main(){
+int lfd,cfd,n,fd;
+char buff[200],fn[20];
+struct sockaddr_in serv,cli;
+int len=sizeof(cli);
+lfd=socket(AF_INET,SOCK_STREAM,0);
+serv.sin_family=AF_INET;
+serv.sin_port=htons(1400);
+inet_pton(AF_INET,"192.168.4.3",&serv.sin_addr);
+bind(lfd,(struct sockaddr*)&serv,sizeof(serv));
+listen(lfd,5);
+cfd=accept(lfd,(struct sockaddr*)&cli,&len);
+n=read(cfd,fn,sizeof(fn));
+fd=open(fn,O_RDONLY);
+while((n=read(fd,buff,sizeof(buff)))>0)
+{
+write(cfd,buff,n);
+}
+close(cfd);
+return 0;
+}

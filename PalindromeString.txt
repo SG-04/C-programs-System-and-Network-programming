@@ -1,0 +1,75 @@
+#child process
+#include<stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <linux/stat.h>
+#include<string.h>
+int main()
+{
+FILE *fp;
+int i,t=1,c=0;
+char b[200],b1[200];
+char *p;
+while(1)
+{
+fp=fopen("FIFO","r");
+fgets(b,200,fp);
+printf("Received string:%s\n",b);
+fclose(fp);
+break;
+}
+int s=strlen(b);
+for(i=s-1;i>=0;i--)
+{b1[c++]=b[i];
+}
+for(i=0;i<s;i++)
+{if(b[i]!=b1[i])
+{
+t=0;
+break;
+}
+}
+
+fp=fopen("FIFO","w");
+if(t==0){
+p="false";}
+else{
+p="true";}
+fputs(p,fp);
+return(0);
+}
+
+
+#parent process
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/stat.h>
+#include<unistd.h>
+#include<string.h>
+#include<linux/stat.h>
+int main(void)
+{
+FILE *fp;
+char b[100];
+mknod("FIFO",S_IFIFO|0666,0);
+if((fp=fopen("FIFO","w"))==NULL)
+{
+perror("fopen");
+exit(1);
+}
+char st[100];
+printf("Enter an String");
+scanf("%s",st);
+fputs(st,fp);
+fclose(fp);
+while(1)
+{
+fp=fopen("FIFO","r");
+fgets(b,80,fp);
+printf("Palindrome  String:%s\n",b);
+fclose(fp);
+break;
+}
+return(0);
+}

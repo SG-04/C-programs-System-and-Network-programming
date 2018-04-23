@@ -1,0 +1,44 @@
+#include<stdio.h>
+#include<sys/types.h>
+#include<unistd.h>
+int main()
+{
+int pid,pid1,fd1[2],fd2[2];
+pipe(fd1);
+pid=fork();
+if(pid==0)
+{
+        pipe(fd2);
+        pid1=fork();
+        if(pid1==0)
+        {
+        close(1);
+        close(fd2[0]);
+        dup(fd2[1]);
+        printf("Child\n");
+        execlp("ls","ls",NULL);
+        }
+        else
+        {
+        close(0);
+        close(1);
+        close(fd2[1]);
+        close(fd1[0]);
+        dup(fd2[0]);
+        dup(fd1[1]);
+        printf("Parent\n");
+        execlp("sort","sort",NULL);
+  }
+}
+else
+{
+        close(0);
+        close(fd2[0]);
+        close(fd2[1]);
+        close(fd1[1]);
+        dup(fd1[0]);
+        //printf("Grandparent\n");
+        execlp("wc","wc",NULL);
+}
+return 0;
+

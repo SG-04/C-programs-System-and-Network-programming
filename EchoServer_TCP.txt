@@ -1,0 +1,51 @@
+#server
+#include<stdio.h>
+#include<netinet/in.h>
+#include<sys/socket.h>
+#include<string.h>
+#include<unistd.h>
+int main(){
+int lfd,cfd,n;
+char str3[200];
+struct sockaddr_in serv,cli;
+int len=sizeof(cli);
+lfd=socket(AF_INET,SOCK_STREAM,0);
+serv.sin_family=AF_INET;
+serv.sin_port=htons(1400);
+inet_pton(AF_INET,"192.168.4.3",&serv.sin_addr);
+bind(lfd,(struct sockaddr*)&serv,sizeof(serv));
+listen(lfd,5);
+cfd=accept(lfd,(struct sockaddr*)&cli,&len);
+n=read(cfd,str3,sizeof(str3));
+write(cfd,str3,n);
+close(cfd);
+return 0;
+}
+
+#client
+
+#include<stdio.h>
+#include<sys/types.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<netinet/in.h>
+#include<sys/socket.h>
+#include<string.h>
+int main(){
+char str[200],str1[20];
+int sfd,n;
+struct sockaddr_in serv;
+sfd=socket(AF_INET,SOCK_STREAM,0);
+serv.sin_family=AF_INET;
+serv.sin_port=htons(1400);
+inet_pton(AF_INET,"192.168.4.3",&serv.sin_addr);
+connect(sfd,(struct sockaddr*)&serv,sizeof(serv));
+printf("Enter string\n");
+scanf("%s",str);
+write(sfd,str,strlen(str));
+n=read(sfd,str1,sizeof(str1));
+printf("Received string\n");
+write(1,str1,n);
+close(sfd);
+return 0;
+}

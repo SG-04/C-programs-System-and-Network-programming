@@ -1,0 +1,103 @@
+related fifo
+
+#include<stdio.h>
+#include<sys/types.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<stdlib.h>
+#define MODE S_IRUSR|S_IWUSR
+int main()
+{
+int pid,f;
+pid=fork();
+mkfifo("myfifo",MODE);
+if(pid==0)
+{
+ f=open("myfifo",O_RDONLY);
+ char filename[100];
+ read(f,filename,sizeof(filename));
+ int fd=open(filename,'r');
+ char data[120];
+ int n=read(fd,data,sizeof(data));
+ close(f);
+ f=open("myfifo",O_WRONLY);
+ write(f,data,n);
+ close(f);
+}
+else
+{
+ f=open("myfifo",O_WRONLY);
+ char filename[100];
+ printf("Enter the name of the file:");
+ scanf("%s",filename);
+ write(f,filename,sizeof(filename));
+ close(f);
+ f=open("myfifo",O_RDONLY);
+ char data[150];
+ int n=read(f,data,sizeof(data));
+ close(f);
+ write(1,data,n);
+}
+return 0;
+}
+
+
+
+un related fifo
+client:-
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<stdlib.h>
+#include<fcntl.h>
+#define MODE S_IRUSR|S_IWUSR
+int main(){
+int f;
+char filename[100];
+printf("Enter the name of the file:");
+scanf("%s",filename);
+f=open("anotherfifo",O_WRONLY);
+printf("Client is about to write filename on the fifo\n");
+write(f,filename,sizeof(filename));
+close(f);
+char data[500];
+printf("fifo is opened\n");
+f=open("anotherfifo",O_RDONLY);
+printf("client is about to read data from fifo\n");
+int n=read(f,data,sizeof(data));
+printf("data:\n");
+write(1,data,n);
+close(f);
+return 0;
+}
+
+
+server:-
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#define MODE S_IRUSR|S_IWUSR
+int main()
+{
+ char filename[100];
+ mkfifo("anotherfifo",MODE);
+ printf("we are about to open fifo\n");
+ int f=open("anotherfifo",O_RDONLY);
+ printf("server is about to read filename!\n");
+ int n=read(f,filename,sizeof(filename));
+ int fd=open(filename,'r');
+ char data[500];
+ printf("server is about to read data!\n");
+ int d=read(fd,data,sizeof(data));
+ close(f);
+ f=open("anotherfifo",O_WRONLY);
+ printf("server is writing data\n");
+ write(f,data,d);
+ close(f);
+return 0;
+}
